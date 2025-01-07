@@ -1,13 +1,16 @@
 import os
-
 from flask import Flask, request, jsonify
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
+from huggingface_hub import hf_hub_download
 import numpy as np
 
 app = Flask(__name__)
 
-MODEL_PATH = os.path.abspath('../IA-FalAPI/models/cnn_gore_model.h5')
+MODEL_REPO = "Nogellex/IA-FalAPI"
+MODEL_FILENAME = "cnn_gore_model.h5"
+
+MODEL_PATH = hf_hub_download(repo_id=MODEL_REPO, filename=MODEL_FILENAME)
 model = load_model(MODEL_PATH)
 
 def preprocess_image(image_path):
