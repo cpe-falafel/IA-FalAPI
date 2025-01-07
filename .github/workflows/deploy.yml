@@ -30,7 +30,8 @@ jobs:
       run: |
         echo "$SSH_PRIVATE_KEY" > private_key.pem
         chmod 600 private_key.pem
-        scp -i private_key.pem -r * deployer@$SERVER_IP:/home/deployer/app/
+        scp -o StrictHostKeyChecking=no -i private_key.pem -r * deployer@$SERVER_IP:/home/deployer/app/
+        ssh -o StrictHostKeyChecking=no -i private_key.pem deployer@$SERVER_IP "pkill -f app.py || true; cd /home/deployer/app; nohup python3 app.py > flask_output.log 2>&1 &"
         rm private_key.pem
 
     - name: Start Flask application with nohup
