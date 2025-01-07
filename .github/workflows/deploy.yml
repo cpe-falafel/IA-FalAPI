@@ -47,8 +47,8 @@ jobs:
         echo "$SSH_PRIVATE_KEY" > private_key.pem
         chmod 600 private_key.pem
         ssh -i private_key.pem deployer@$SERVER_IP "
-          pkill -f app.py || true;  # Arrête l'application si elle est déjà en cours
+          pkill -f main.py || true;
           cd /home/deployer/app;
-          nohup python3 app.py > flask_output.log 2>&1 &
+          nohup python3 app/main.py > flask_output.log 2>&1 &
         "
         rm private_key.pem
