@@ -37,11 +37,7 @@ jobs:
         echo "$SSH_PRIVATE_KEY" > private_key.pem
         chmod 600 private_key.pem
         scp -i private_key.pem -r * deployer@$SERVER_IP:/home/deployer/app/
-        rm private_key.pem
-
-    - name: Install dependencies
-      run: |
-        pip3 install -r app/requirements.txt
+        rm private_key.pem    
 
     - name: Start Flask application with nohup
       env:
@@ -51,8 +47,9 @@ jobs:
         echo "$SSH_PRIVATE_KEY" > private_key.pem
         chmod 600 private_key.pem
         ssh -v -i private_key.pem deployer@$SERVER_IP "
-          pkill -f main.py || true;
           cd /home/deployer/app;
+          pip3 install -r requirements.txt
+          pkill -f main.py || true;
           nohup python3 app/main.py > flask_output.log 2>&1 &
         "
         rm private_key.pem
