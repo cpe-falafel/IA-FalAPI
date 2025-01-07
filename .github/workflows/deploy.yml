@@ -39,6 +39,10 @@ jobs:
         scp -i private_key.pem -r * deployer@$SERVER_IP:/home/deployer/app/
         rm private_key.pem
 
+    - name: Install dependencies
+      run: |
+        pip3 install -r app/requirements.txt
+
     - name: Start Flask application with nohup
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
