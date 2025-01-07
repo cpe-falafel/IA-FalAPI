@@ -10,36 +10,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      - name: Setup SSH Key
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: |
-          echo "$SSH_PRIVATE_KEY" > private_key.pem
-          chmod 600 private_key.pem
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9
 
-      - name: Debug SSH connection
-        env:
-          SERVER_IP: ${{ secrets.SERVER_IP }}
-        run: |
-          echo "Testing SSH connection to the server..."
-          ssh -o StrictHostKeyChecking=no -i private_key.pem deployer@${{ secrets.SERVER_IP }} exit
+    - name: Install dependencies
+      run: |
+        python3 -m pip install --upgrade pip
+        pip install -r requirements.txt
 
-      - name: Debug SCP
-        env:
-          SERVER_IP: ${{ secrets.SERVER_IP }}
-        run: |
-          echo "Testing SCP to copy files to the server..."
-          scp -v -o StrictHostKeyChecking=no -i private_key.pem -r * deployer@${{ secrets.SERVER_IP }}:/home/deployer/app/
+    - name: Copy files to server
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        SERVER_IP: ${{ secrets.SERVER_IP }}
+      run: |
+        echo "$SSH_PRIVATE_KEY" > private_key.pem
+        chmod 600 private_key.pem
+        scp -i private_key.pem -r * deployer@$SERVER_IP:/home/deployer/app/
+        rm private_key.pem
 
-      - name: Deploy Application on Server
-        env:
-          SERVER_IP: ${{ secrets.SERVER_IP }}
-        run: |
-          echo "Deploying application on the server..."
-          ssh -o StrictHostKeyChecking=no -i private_key.pem deployer@${{ secrets.SERVER_IP }} "pkill -f app.py || true; cd /home/deployer/app; nohup python3 app.py > flask_output.log 2>&1 &"
-
-      - name: Clean up private key
-        run: rm private_key.pem
+    - name: Start Flask application with nohup
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        SERVER_IP: ${{ secrets.SERVER_IP }}
+      run: |
+        echo "$SSH_PRIVATE_KEY" > private_key.pem
+        chmod 600 private_key.pem
+        ssh -i private_key.pem deployer@$SERVER_IP "
+          pkill -f app.py || true;  # Arrête l'application si elle est déjà en cours
+          cd /home/deployer/app;
+          nohup python3 app.py > flask_output.log 2>&1 &
+        "
+        rm private_key.pem
