@@ -23,6 +23,12 @@ jobs:
         python3 -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    - name: Add SSH host to known_hosts
+      run: |
+        mkdir -p ~/.ssh
+        ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+        chmod 644 ~/.ssh/known_hosts
+
     - name: Copy files to server
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
