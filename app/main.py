@@ -11,7 +11,7 @@ MODEL_REPO = "Nogellex/IA-FalAPI"
 MODEL_FILENAME = "cnn_gore_model.h5"
 
 MODEL_PATH = hf_hub_download(repo_id=MODEL_REPO, filename=MODEL_FILENAME)
-model = load_model(MODEL_PATH)
+model = load_model(MODEL_PATH, compile=False)
 
 def preprocess_image(image_path):
     img = load_img(image_path, target_size=(256, 256))
