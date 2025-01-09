@@ -34,6 +34,9 @@ def predict():
     processed_image = preprocess_image(image_path)
     prediction = model.predict(processed_image)[0][0] * 100
 
+    if os.path.exists(image_path):
+        os.remove(image_path)
+
     return jsonify({'gore_score': round(float(prediction), 2)})
 
 if __name__ == '__main__':
