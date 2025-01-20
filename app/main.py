@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
 from huggingface_hub import hf_hub_download
+from PIL import Image
 import numpy as np
 
 app = Flask(__name__)
@@ -28,8 +29,20 @@ def predict():
     if not os.path.exists(temp_dir):
         os.makedirs(temp_dir)
 
-    image_path = f"temp/{image.filename}"
+    image_path = f"{temp_dir}/{image.filename}"
     image.save(image_path)
+
+    try:
+        with Image.open(image_path) as img:
+            width, height = img.size
+            if width != 256 or height != 256:
+                if os.path.exists(image_path):
+                    os.remove(image_path)
+                return jsonify({'error': 'Les dimensions de l\'image doivent être de 256x256 pixels'}), 400
+    except Exception as e:
+        if os.path.exists(image_path):
+            os.remove(image_path)
+        return jsonify({'error': f'Erreur lors de la lecture de l\'image : {str(e)}'}), 400
 
     processed_image = preprocess_image(image_path)
     prediction = model.predict(processed_image)[0][0] * 100
